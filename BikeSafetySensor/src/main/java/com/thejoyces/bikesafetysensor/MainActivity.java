@@ -1,5 +1,6 @@
 package com.thejoyces.bikesafetysensor;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
@@ -9,6 +10,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
@@ -19,6 +21,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
 import android.telephony.SmsManager;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
@@ -42,7 +45,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends Activity {
-    public final String ACTION_USB_PERMISSION = "com.hariharan.arduinousb.USB_PERMISSION";
+    public final String ACTION_USB_PERMISSION = "com.thejoyces.bikesafetysensor.USB_PERMISSION";
     Button startButton, sendButton, clearButton, stopButton;
     TextView textView;
     EditText editText;
@@ -66,18 +69,29 @@ public class MainActivity extends Activity {
             try {
                 data = new String(arg0, "UTF-8");
                 data.concat("/n");
-                textviewAppendData(textView, data);
+                textviewAppendData(textView, "Received Data: " + data);
+
+                if( data.startsWith("2"))
+                {
+                    textviewAppendData(textView, "Tilt Sensor Activated");
+                    Toast.makeText(getApplicationContext(), "Tilt Sensor Activated",
+                            Toast.LENGTH_SHORT).show();
+                    getGPSLocationAndSendText(null);
+                }
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
-                textviewAppendData(textView, e.getStackTrace().toString());
+                textviewAppendData(textView, "onReceivedData: " + e.getMessage());
             }
-
-
+            catch( Exception e )
+            {
+                textviewAppendData(textView, "onReceivedData: " + e.getMessage());
+            }
         }
     };
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() { //Broadcast Receiver to automatically start and stop the Serial connection.
         @Override
         public void onReceive(Context context, Intent intent) {
+            try {
             if (intent.getAction().equals(ACTION_USB_PERMISSION)) {
                 boolean granted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
                 if (granted) {
@@ -99,7 +113,6 @@ public class MainActivity extends Activity {
                             updateStatus("Connected to Arduino");
                             Toast.makeText(getApplicationContext(), "Connected to Arduino",
                                     Toast.LENGTH_LONG).show();
-
 
                         } else {
                             Log.d("SERIAL", "PORT NOT OPEN");
@@ -128,41 +141,56 @@ public class MainActivity extends Activity {
 
             }
         }
+        catch( Exception e )
+        {
+            textviewAppendData(textView, "BroadcastReceiver: " + e.getMessage());
+        }
+        }
 
         ;
     };
 
     public void initializeUSBDevices(View view) {
+try {
+    // textviewAppendData(textView, "initializeUSBDevices");
+    Log.d("SERIAL", "initializeUSBDevices");
 
-       // textviewAppendData(textView, "initializeUSBDevices");
-        Log.d("SERIAL", "initializeUSBDevices");
+    if (connected == true) {
+        textviewAppendData(textView, "initializeUSBDevices - Already Connected");
+        return;
+    }
 
-        HashMap<String, UsbDevice> usbDevices = usbManager.getDeviceList();
-        if (!usbDevices.isEmpty()) {
-            boolean keep = true;
-            for (Map.Entry<String, UsbDevice> entry : usbDevices.entrySet()) {
-                device = entry.getValue();
-                int deviceVID = device.getVendorId();
-                textviewAppendData(textView, "initializeUSBDevices - deviceId" + device.getDeviceName() + "   " + device.getManufacturerName() + "   " + device.getDeviceId());
-                if (deviceVID == 0x2341)//Arduino Vendor ID
-                {
-                    PendingIntent pi = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
-                    usbManager.requestPermission(device, pi);
-                    keep = false;
-                    textviewAppendData(textView, "Found Arduino Vendor ID");
-                    updateStatus("Found Arduino USB Board");
-                } else {
-                    connection = null;
-                    device = null;
-                    textviewAppendData(textView, "Not an Arduino Vendor");
-                }
-                if (!keep)
-                    break;
+    HashMap<String, UsbDevice> usbDevices = usbManager.getDeviceList();
+    if (!usbDevices.isEmpty()) {
+        boolean keep = true;
+        for (Map.Entry<String, UsbDevice> entry : usbDevices.entrySet()) {
+            device = entry.getValue();
+            int deviceVID = device.getVendorId();
+            textviewAppendData(textView, "initializeUSBDevices - deviceId" + device.getDeviceName() + "   " + device.getManufacturerName() + "   " + device.getDeviceId());
+            if (deviceVID == 0x2341)//Arduino Vendor ID
+            {
+                PendingIntent pi = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
+                usbManager.requestPermission(device, pi);
+                keep = false;
+                textviewAppendData(textView, "Found Arduino Vendor ID");
+                updateStatus("Found Arduino USB Board");
+            } else {
+                connection = null;
+                device = null;
+                textviewAppendData(textView, "Not an Arduino Vendor");
             }
-        } else {
-            textviewAppendData(textView, "initializeUSBDevices - No USB Devices");
-            updateStatus("No USB Devices");
+            if (!keep)
+                break;
         }
+    } else {
+        textviewAppendData(textView, "initializeUSBDevices - No USB Devices");
+        updateStatus("No USB Devices");
+    }
+}
+catch( Exception ex)
+{
+    textviewAppendData(textView, "initializeUSBDevices " + ex.getMessage());
+}
     }
 
     /**
@@ -171,30 +199,44 @@ public class MainActivity extends Activity {
      */
     private GoogleApiClient client;
 
-    public void getGPSLocationAndSendText( View view )
-    {
+    public void getGPSLocationAndSendText(View view) {
         flag = displayGpsStatus();
         if (flag) {
-            textviewAppendData(textView, "Cannot get the GPS coordinates - Move a bit");
-            // editLocation.setText("Please!! move your device to"+
-            //          " see the changes in coordinates."+"\nWait..");
+            textviewAppendData(textView, "getGPSLocationAndSendText - requestLocationUpdates");
 
-            // pb.setVisibility(View.VISIBLE);
             locationListener = new MyLocationListener();
 
             try {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    alertbox("Gps Status!!", "No permission to get GPS");
+                    textviewAppendData(textView, "No permission to get GPS");
+                    return;
+                }
+
                 locationMangaer.requestLocationUpdates(LocationManager
                         .GPS_PROVIDER, 5000, 10, locationListener);
             } catch (Exception ex) {
                 alertbox("Gps Status!!", "Your GPS is: OFF" + ex.getMessage());
+                textviewAppendData(textView, "Your GPS is turned OFF");
             }
 
-
         } else {
-            alertbox("Gps Status!!", "Your GPS is: OFF");
+            Toast.makeText(getApplicationContext(), "Your GPS is OFF",
+                    Toast.LENGTH_LONG).show();
+            textviewAppendData(textView, "Your GPS is OFF");
+
+            //alertbox("Gps Status!!", "Your GPS is: OFF");
+
         }
 
-        try {
+     /*   try {
             SmsManager smsManager = SmsManager.getDefault();
             smsManager.sendTextMessage(editPhoneNumber.getText().toString(), null, "sms message", null, null);
             Toast.makeText(getApplicationContext(), "SMS Sent!",
@@ -205,7 +247,7 @@ public class MainActivity extends Activity {
 
             textviewAppendData(textView, ex.getMessage());
             alertbox("cannot send sms", ex.getMessage());
-        }
+        }*/
     }
 
     public void sendDataViaSerialPort(View view) {
@@ -225,6 +267,7 @@ public class MainActivity extends Activity {
         try {
             serialPort.close();
             textviewAppendData(textView, "Serial Connection Closed!");
+            connected = false;
         }
         catch( Exception ex)
         {
@@ -379,19 +422,6 @@ public class MainActivity extends Activity {
 
         handler.postAtTime(runnable, System.currentTimeMillis()+2000);
         handler.postDelayed(runnable, 2000);
-
-
-
-    /*    Timer timerLoopScan = new Timer();
-        TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                initializeUSBDevices( null );
-            });
-        }
-    };
-    timerLoopScan.scheduleAtFixedRate(timerTask, 0, scanPeriod);
-    */
     }
 
     public void updateStatus(String message)
@@ -418,6 +448,19 @@ public class MainActivity extends Activity {
 
             String latitude = "Latitude: " + loc.getLatitude();
             textviewAppendData(textView, "Latitude " + latitude);
+
+            try {
+                SmsManager smsManager = SmsManager.getDefault();
+                smsManager.sendTextMessage(editPhoneNumber.getText().toString(), null, longitude + latitude, null, null);
+                Toast.makeText(getApplicationContext(), "SMS Sent to" + editPhoneNumber.getText().toString(),
+                        Toast.LENGTH_LONG).show();
+                textviewAppendData(textView, "SMS Sent to " + editPhoneNumber.getText().toString());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+
+                textviewAppendData(textView, ex.getMessage());
+                alertbox("cannot send sms", ex.getMessage());
+            }
         }
 
         @Override
