@@ -175,8 +175,7 @@ public class MainActivity extends Activity {
     {
         flag = displayGpsStatus();
         if (flag) {
-            textviewAppendData(textView, "Please!! move your device to" +
-                    " see the changes in coordinates." + "\nWait..");
+            textviewAppendData(textView, "Cannot get the GPS coordinates - Move a bit");
             // editLocation.setText("Please!! move your device to"+
             //          " see the changes in coordinates."+"\nWait..");
 
@@ -214,7 +213,7 @@ public class MainActivity extends Activity {
 
         try {
             serialPort.write(string.getBytes());
-            textviewAppendData(textView, "Data Sent: " + string + "");
+            textviewAppendData(textView, "Serial Data Sent: " + string + "");
         }
         catch( Exception ex)
         {
@@ -223,10 +222,14 @@ public class MainActivity extends Activity {
     }
 
     public void closeSerialPort(View view) {
-
-        serialPort.close();
-        textviewAppendData(textView, "Serial Connection Closed!");
-
+        try {
+            serialPort.close();
+            textviewAppendData(textView, "Serial Connection Closed!");
+        }
+        catch( Exception ex)
+        {
+            textviewAppendData(textView, "Error Closing Serial Connection" + ex.getMessage());
+        }
     }
 
     public void onClickClear(View view) {
@@ -246,10 +249,9 @@ public class MainActivity extends Activity {
             public void run() {
                 ftv.setMovementMethod(new ScrollingMovementMethod());
 
-                ftv.append(formattedDate + ": ");
-                ftv.append(ftext);
-                ftv.append("\n");
-            }
+                String message = formattedDate + ": " + ftext.toString() + "\n";
+                ftv.setText(message + ftv.getText());
+             }
         });
     }
 
@@ -338,10 +340,8 @@ public class MainActivity extends Activity {
       // setContentView(R.layout.layout);
         usbManager = (UsbManager) getSystemService(this.USB_SERVICE);
         buttonStatus = (Button) findViewById(R.id.buttonStatus);
-        startButton = (Button) findViewById(R.id.buttonStart);
         sendButton = (Button) findViewById(R.id.buttonSend);
         clearButton = (Button) findViewById(R.id.buttonClear);
-        stopButton = (Button) findViewById(R.id.buttonStop);
         editText = (EditText) findViewById(R.id.editText);
         editPhoneNumber = (EditText) findViewById(R.id.editPhoneNumber);
 

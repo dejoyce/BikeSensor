@@ -10,11 +10,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/editText"
-        android:text="Command"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:textSize="14sp" />
+        android:textSize="10sp"
+        android:hint="Serial Command" />
 
     <Button
         android:text="Status: "
@@ -27,7 +27,11 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:textSize="14sp"
-        android:focusableInTouchMode="true" />
+        android:focusableInTouchMode="true"
+        android:background="@android:color/background_dark"
+        android:textColor="@android:color/holo_orange_light"
+        android:verticalScrollbarPosition="right"
+        android:textStyle="bold" />
 
     <Button
         android:layout_width="wrap_content"
@@ -58,17 +62,6 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Stop"
-        android:id="@+id/buttonStop"
-        android:onClick="closeSerialPort"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/textView" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:text="Test -Send SMS"
         android:id="@+id/buttonClear"
         android:onClick="getGPSLocationAndSendText"
@@ -94,18 +87,8 @@
         android:textColor="@android:color/holo_green_light"
         android:layout_toStartOf="@+id/buttonClear"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true" /><![CDATA[
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Begin"
-        android:id="@+id/buttonStart"
-        android:onClick="initializeUSBDevices"
-
-        android:layout_alignBottom="@+id/buttonStop"
-        android:layout_toLeftOf="@+id/buttonStop"
-        android:layout_toStartOf="@+id/buttonStop"
-        android:layout_below="@+id/textView" />
     " />
+]]>
 </RelativeLayout>
