@@ -90,8 +90,8 @@
         android:layout_above="@+id/buttonSend"
         android:textSize="10sp"
         android:layout_below="@+id/buttonClear"
-        android:background="@android:color/background_light"
-        android:textColor="@color/common_google_signin_btn_text_dark_focused"
+        android:background="@android:color/background_dark"
+        android:textColor="@android:color/holo_green_light"
         android:layout_toStartOf="@+id/buttonClear"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
