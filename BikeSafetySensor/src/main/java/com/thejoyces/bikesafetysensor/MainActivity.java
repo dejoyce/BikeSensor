@@ -38,6 +38,8 @@ import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -74,17 +76,21 @@ public class MainActivity extends Activity {
                 if( data.startsWith("2"))
                 {
                     textviewAppendData(textView, "Tilt Sensor Activated");
-                    Toast.makeText(getApplicationContext(), "Tilt Sensor Activated",
-                            Toast.LENGTH_SHORT).show();
-                    getGPSLocationAndSendText(null);
+
+                    //getGPSLocationAndSendText(null);
                 }
             } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-                textviewAppendData(textView, "onReceivedData: " + e.getMessage());
+                textviewAppendData(textView, "onReceivedData: " + e.getMessage() );
             }
             catch( Exception e )
             {
-                textviewAppendData(textView, "onReceivedData: " + e.getMessage());
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+                sw.toString(); // stack trace as a string
+
+
+                textviewAppendData(textView, "onReceivedData: " + e.getMessage()  + sw.toString() );
             }
         }
     };
@@ -92,7 +98,7 @@ public class MainActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             try {
-            if (intent.getAction().equals(ACTION_USB_PERMISSION)) {
+          /*  if (intent.getAction().equals(ACTION_USB_PERMISSION)) {
                 boolean granted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
                 if (granted) {
                     connection = usbManager.openDevice(device);
@@ -139,7 +145,7 @@ public class MainActivity extends Activity {
                 textviewAppendData(textView, "UsbManager.ACTION_USB_DEVICE_DETACHED)");
                 closeSerialPort(stopButton);
 
-            }
+            }*/
         }
         catch( Exception e )
         {
@@ -165,7 +171,7 @@ try {
         boolean keep = true;
         for (Map.Entry<String, UsbDevice> entry : usbDevices.entrySet()) {
             device = entry.getValue();
-            int deviceVID = device.getVendorId();
+          int deviceVID = device.getVendorId();
             textviewAppendData(textView, "initializeUSBDevices - deviceId" + device.getDeviceName() + "   " + device.getManufacturerName() + "   " + device.getDeviceId());
             if (deviceVID == 0x2341)//Arduino Vendor ID
             {
@@ -181,6 +187,7 @@ try {
             }
             if (!keep)
                 break;
+
         }
     } else {
         textviewAppendData(textView, "initializeUSBDevices - No USB Devices");
@@ -215,7 +222,7 @@ catch( Exception ex)
                     //                                          int[] grantResults)
                     // to handle the case where the user grants the permission. See the documentation
                     // for ActivityCompat#requestPermissions for more details.
-                    alertbox("Gps Status!!", "No permission to get GPS");
+                    //alertbox("Gps Status!!", "No permission to get GPS");
                     textviewAppendData(textView, "No permission to get GPS");
                     return;
                 }
@@ -223,13 +230,13 @@ catch( Exception ex)
                 locationMangaer.requestLocationUpdates(LocationManager
                         .GPS_PROVIDER, 5000, 10, locationListener);
             } catch (Exception ex) {
-                alertbox("Gps Status!!", "Your GPS is: OFF" + ex.getMessage());
+               // alertbox("Gps Status!!", "Your GPS is: OFF" + ex.getMessage());
                 textviewAppendData(textView, "Your GPS is turned OFF");
             }
 
         } else {
-            Toast.makeText(getApplicationContext(), "Your GPS is OFF",
-                    Toast.LENGTH_LONG).show();
+            //Toast.makeText(getApplicationContext(), "Your GPS is OFF",
+              //      Toast.LENGTH_LONG).show();
             textviewAppendData(textView, "Your GPS is OFF");
 
             //alertbox("Gps Status!!", "Your GPS is: OFF");
@@ -254,8 +261,15 @@ catch( Exception ex)
         String string = editText.getText().toString();
 
         try {
-            serialPort.write(string.getBytes());
-            textviewAppendData(textView, "Serial Data Sent: " + string + "");
+            if( serialPort != null ) {
+                serialPort.write(string.getBytes());
+
+                textviewAppendData(textView, "Serial Data Sent: " + string + "");
+            }
+            else
+            {
+                textviewAppendData(textView, "Cannot send data - serial port not connected");
+            }
         }
         catch( Exception ex)
         {
@@ -349,7 +363,7 @@ catch( Exception ex)
         }
     }
 
-    protected void alertbox(String title, String mymessage) {
+   /* protected void alertbox(String title, String mymessage) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Your Device's GPS is Disable")
                 .setCancelable(false)
@@ -374,7 +388,7 @@ catch( Exception ex)
                         });
         AlertDialog alert = builder.create();
         alert.show();
-    }
+    }*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -452,14 +466,14 @@ catch( Exception ex)
             try {
                 SmsManager smsManager = SmsManager.getDefault();
                 smsManager.sendTextMessage(editPhoneNumber.getText().toString(), null, longitude + latitude, null, null);
-                Toast.makeText(getApplicationContext(), "SMS Sent to" + editPhoneNumber.getText().toString(),
-                        Toast.LENGTH_LONG).show();
+              //  Toast.makeText(getApplicationContext(), "SMS Sent to" + editPhoneNumber.getText().toString(),
+                //        Toast.LENGTH_LONG).show();
                 textviewAppendData(textView, "SMS Sent to " + editPhoneNumber.getText().toString());
             } catch (Exception ex) {
                 ex.printStackTrace();
 
                 textviewAppendData(textView, ex.getMessage());
-                alertbox("cannot send sms", ex.getMessage());
+                //alertbox("cannot send sms", ex.getMessage());
             }
         }
 
