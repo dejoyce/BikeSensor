@@ -2,12 +2,10 @@ package com.thejoyces.bikesafetysensor;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -28,6 +26,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,13 +49,18 @@ public class MainActivity extends Activity {
     public final String ACTION_USB_PERMISSION = "com.thejoyces.bikesafetysensor.USB_PERMISSION";
     Button startButton, sendButton, clearButton, stopButton;
     TextView textView;
-    EditText editText;
+    EditText editTextSerialCommandToSend;
     EditText editPhoneNumber;
     UsbManager usbManager;
     Button buttonStatus;
     UsbDevice device;
     UsbSerialDevice serialPort;
     UsbDeviceConnection connection;
+    RadioButton radioButtonSoundBuzzer;
+    RadioButton radioButtonLightLED;
+    RadioButton radioButtonDisplayLCD;
+    RadioButton radioButtonSendSerialCommand;
+    RadioButton radioButtonSendSMSTest;
 
     private LocationManager locationMangaer = null;
     private LocationListener locationListener = null;
@@ -77,7 +81,7 @@ public class MainActivity extends Activity {
                 {
                     textviewAppendData(textView, "Tilt Sensor Activated");
 
-                    //getGPSLocationAndSendText(null);
+                    getGPSLocationAndSendText(null);
                 }
             } catch (UnsupportedEncodingException e) {
                 textviewAppendData(textView, "onReceivedData: " + e.getMessage() );
@@ -89,7 +93,6 @@ public class MainActivity extends Activity {
                 e.printStackTrace(pw);
                 sw.toString(); // stack trace as a string
 
-
                 textviewAppendData(textView, "onReceivedData: " + e.getMessage()  + sw.toString() );
             }
         }
@@ -98,7 +101,7 @@ public class MainActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             try {
-          /*  if (intent.getAction().equals(ACTION_USB_PERMISSION)) {
+            if (intent.getAction().equals(ACTION_USB_PERMISSION)) {
                 boolean granted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
                 if (granted) {
                     connection = usbManager.openDevice(device);
@@ -145,7 +148,7 @@ public class MainActivity extends Activity {
                 textviewAppendData(textView, "UsbManager.ACTION_USB_DEVICE_DETACHED)");
                 closeSerialPort(stopButton);
 
-            }*/
+            }
         }
         catch( Exception e )
         {
@@ -258,13 +261,35 @@ catch( Exception ex)
     }
 
     public void sendDataViaSerialPort(View view) {
-        String string = editText.getText().toString();
+
+        String dataToSend = "";
+        if( radioButtonSoundBuzzer.isChecked())
+        {
+            dataToSend = "a";
+        }
+        else if( radioButtonLightLED.isChecked())
+        {
+            dataToSend = "b";
+        }
+        else if( radioButtonDisplayLCD.isChecked())
+        {
+            dataToSend = "c";
+        }
+        else if( radioButtonSendSerialCommand.isChecked())
+        {
+            dataToSend = editTextSerialCommandToSend.getText().toString();
+        }
+        else if( radioButtonSendSMSTest.isChecked())
+        {
+            getGPSLocationAndSendText( null );
+            return;
+        }
 
         try {
             if( serialPort != null ) {
-                serialPort.write(string.getBytes());
+                serialPort.write(dataToSend.toString().getBytes());
 
-                textviewAppendData(textView, "Serial Data Sent: " + string + "");
+                textviewAppendData(textView, "Serial Data Sent: " + dataToSend + "");
             }
             else
             {
@@ -399,8 +424,14 @@ catch( Exception ex)
         buttonStatus = (Button) findViewById(R.id.buttonStatus);
         sendButton = (Button) findViewById(R.id.buttonSend);
         clearButton = (Button) findViewById(R.id.buttonClear);
-        editText = (EditText) findViewById(R.id.editText);
+        editTextSerialCommandToSend = (EditText) findViewById(R.id.editTextSerialCommandToSend);
         editPhoneNumber = (EditText) findViewById(R.id.editPhoneNumber);
+        radioButtonSoundBuzzer = (RadioButton) findViewById(R.id.radioButtonSoundBuzzer);
+        radioButtonLightLED = (RadioButton) findViewById(R.id.radioButtonLightLED);
+        radioButtonDisplayLCD = (RadioButton) findViewById(R.id.radioButtonDisplayLCD);
+        radioButtonSendSerialCommand = (RadioButton) findViewById(R.id.radioButtonSendSerialCommand);
+        radioButtonSendSMSTest = (RadioButton) findViewById(R.id.radioButtonSendTestSMS);
+
 
         buttonStatus.requestFocus();
 
@@ -408,6 +439,12 @@ catch( Exception ex)
         textView = (TextView) findViewById(R.id.textView);
         textView.setText("");
         // textView.setMovementMethod(new ScrollingMovementMethod());
+
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_USB_PERMISSION);
@@ -418,10 +455,10 @@ catch( Exception ex)
         locationMangaer = (LocationManager)
                 getSystemService(Context.LOCATION_SERVICE);
 
+
+
         editPhoneNumber.setText("0876238219");
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+
 
 
         //private final int interval = 10000; // 1 Second
@@ -436,6 +473,7 @@ catch( Exception ex)
 
         handler.postAtTime(runnable, System.currentTimeMillis()+2000);
         handler.postDelayed(runnable, 2000);
+
     }
 
     public void updateStatus(String message)
