@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
@@ -53,6 +54,8 @@ public class MainActivity extends Activity {
     TextView textView;
     EditText editTextSerialCommandToSend;
     EditText editPhoneNumber;
+    TextView textViewNumVehiclesUnder15;
+    TextView numTimesBikeFallen;
     UsbManager usbManager;
     Button buttonStatus;
     UsbDevice device;
@@ -66,6 +69,9 @@ public class MainActivity extends Activity {
     ViewFlipper vf;
     ImageButton buttonFlipper;
 
+    int numVehiclesWithin15 = 0;
+    int numTimeBikeFallen = 0;
+
     private LocationManager locationMangaer = null;
     private LocationListener locationListener = null;
     private Boolean flag = false;
@@ -76,6 +82,7 @@ public class MainActivity extends Activity {
         @Override
         public void onReceivedData(byte[] arg0) {
             String data = null;
+
             try {
                 data = new String(arg0, "UTF-8");
                 data.concat("/n");
@@ -83,9 +90,26 @@ public class MainActivity extends Activity {
 
                 if( data.startsWith("2"))
                 {
-                    textviewAppendData(textView, "Tilt Sensor Activated");
-
-                    getGPSLocationAndSendText(null);
+                    numTimeBikeFallen++;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            textviewAppendData(textView, "Tilt Sensor Activated");
+                            numTimesBikeFallen.setText(numTimeBikeFallen + " times the bicycle has fallen");
+                            getGPSLocationAndSendText(null);
+                        }
+                    });
+                }
+                else if( data.startsWith("3"))
+                {
+                    numVehiclesWithin15++;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            textviewAppendData(textView, "Vehicle passed within 1.5m");
+                            textViewNumVehiclesUnder15.setText(numVehiclesWithin15 + " Vehicles passed within 1.5meters");
+                        }
+                    });
                 }
             } catch (UnsupportedEncodingException e) {
                 textviewAppendData(textView, "onReceivedData: " + e.getMessage() );
@@ -99,13 +123,14 @@ public class MainActivity extends Activity {
 
                 textviewAppendData(textView, "onReceivedData: " + e.getMessage()  + sw.toString() );
             }
+
         }
     };
     private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() { //Broadcast Receiver to automatically start and stop the Serial connection.
         @Override
         public void onReceive(Context context, Intent intent) {
             try {
-                buttonStatus.setBackgroundColor(0xFF0000);
+                buttonStatus.setBackgroundColor(android.graphics.Color.RED);
 
             if (intent.getAction().equals(ACTION_USB_PERMISSION)) {
                 boolean granted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
@@ -126,33 +151,47 @@ public class MainActivity extends Activity {
                             connected = true;
 
                             updateStatus("Connected to Arduino");
-                            Toast.makeText(getApplicationContext(), "Connected to Arduino",
-                                    Toast.LENGTH_LONG).show();
+                           // Toast.makeText(getApplicationContext(), "Connected to Arduino",
+                             //       Toast.LENGTH_LONG).show();
 
-                            buttonStatus.setBackgroundColor(0x228B22);
+                            buttonStatus.setBackgroundColor(Color.GREEN);
                         } else {
-                            Log.d("SERIAL", "PORT NOT OPEN");
+                            //Log.d("SERIAL", "PORT NOT OPEN");
                             connected = false;
                             textviewAppendData(textView, "Port not Opened!");
                             updateStatus("Port not Opened!");
                         }
                     } else {
-                        Log.d("SERIAL", "PORT IS NULL");
+                        //Log.d("SERIAL", "PORT IS NULL");
                         connected = false;
                         textviewAppendData(textView, "Port is NULL");
                         updateStatus("Port is NULL");
                     }
                 } else {
-                    Log.d("SERIAL", "PERM NOT GRANTED");
+                    //Log.d("SERIAL", "PERM NOT GRANTED");
                     connected = false;
                     textviewAppendData(textView, "Perm not granted!");
                     updateStatus("Perm not granted!");
                 }
             } else if (intent.getAction().equals(UsbManager.ACTION_USB_DEVICE_ATTACHED)) {
-                textviewAppendData(textView, "UsbManager.ACTION_USB_DEVICE_ATTACHED)");
-                initializeUSBDevices(startButton);
+                textviewAppendData(textView, "USB Cable plugged in");
+                //initializeUSBDevices(startButton);
+
+             /*   final Handler handler = new Handler();
+                Runnable runnable = new Runnable(){
+                    public void run() {
+                        initializeUSBDevices( null );
+
+                      //  handler.postDelayed(this, 10000);
+                    }
+                };
+
+                handler.postAtTime(runnable, System.currentTimeMillis()+6000);
+                handler.postDelayed(runnable, 6000);
+*/
+
             } else if (intent.getAction().equals(UsbManager.ACTION_USB_DEVICE_DETACHED)) {
-                textviewAppendData(textView, "UsbManager.ACTION_USB_DEVICE_DETACHED)");
+                textviewAppendData(textView, "USB Cable unplugged");
                 closeSerialPort(stopButton);
 
             }
@@ -176,7 +215,9 @@ try {
         return;
     }
 
-    buttonStatus.setBackgroundColor(0xFF0000);
+    updateStatus("Trying to connect to Ardunio");
+
+    buttonStatus.setBackgroundColor(android.graphics.Color.RED);
 
     HashMap<String, UsbDevice> usbDevices = usbManager.getDeviceList();
     if (!usbDevices.isEmpty()) {
@@ -192,6 +233,8 @@ try {
                 keep = false;
                 textviewAppendData(textView, "Found Arduino Board");
                 updateStatus("Found Arduino Board");
+
+                buttonStatus.setBackgroundColor(Color.GREEN);
             } else {
                 connection = null;
                 device = null;
@@ -204,6 +247,8 @@ try {
     } else {
         textviewAppendData(textView, "No USB Devices");
         updateStatus("No USB Devices");
+        buttonStatus.setBackgroundColor(android.graphics.Color.RED);
+
     }
 }
 catch( Exception ex)
@@ -221,7 +266,7 @@ catch( Exception ex)
     public void getGPSLocationAndSendText(View view) {
         flag = displayGpsStatus();
         if (flag) {
-            textviewAppendData(textView, "getGPSLocationAndSendText - requestLocationUpdates");
+            textviewAppendData(textView, "Requesting GPS Location");
 
             locationListener = new MyLocationListener();
 
@@ -316,6 +361,9 @@ catch( Exception ex)
             serialPort.close();
             textviewAppendData(textView, "Serial Connection Closed!");
             connected = false;
+
+            updateStatus("Trying to connect to Ardunio");
+            buttonStatus.setBackgroundColor(android.graphics.Color.RED);
         }
         catch( Exception ex)
         {
@@ -435,6 +483,8 @@ catch( Exception ex)
         clearButton = (Button) findViewById(R.id.buttonClear);
         editTextSerialCommandToSend = (EditText) findViewById(R.id.editTextSerialCommandToSend);
         editPhoneNumber = (EditText) findViewById(R.id.editPhoneNumber);
+        textViewNumVehiclesUnder15 = (TextView) findViewById(R.id.textViewNumVehiclesUnder15);
+        numTimesBikeFallen = (TextView) findViewById(R.id.numTimesBikeFallen);
         radioButtonSoundBuzzer = (RadioButton) findViewById(R.id.radioButtonSoundBuzzer);
         radioButtonLightLED = (RadioButton) findViewById(R.id.radioButtonLightLED);
         radioButtonDisplayLCD = (RadioButton) findViewById(R.id.radioButtonDisplayLCD);
@@ -469,7 +519,9 @@ catch( Exception ex)
 
         editPhoneNumber.setText("0876238219");
 
+        initializeUSBDevices( null );
 
+        /*
 
         //private final int interval = 10000; // 1 Second
          final Handler handler = new Handler();
@@ -483,7 +535,7 @@ catch( Exception ex)
 
         handler.postAtTime(runnable, System.currentTimeMillis()+2000);
         handler.postDelayed(runnable, 2000);
-
+*/
     }
 
     public void updateStatus(String message)
@@ -492,7 +544,8 @@ catch( Exception ex)
         Calendar c = Calendar.getInstance();
         final String formattedDate = df.format(c.getTime());
 
-        this.buttonStatus.setText("Status: " + message + "(" + formattedDate + ")");
+       // this.buttonStatus.setText("Status: " + message + "(" + formattedDate + ")");
+        this.buttonStatus.setText("Status: " + message );
     }
 
     /*----------Listener class to get coordinates ------------- */
@@ -500,9 +553,9 @@ catch( Exception ex)
         @Override
         public void onLocationChanged(Location loc) {
 
-            Toast.makeText(getBaseContext(), "Location changed : Lat: " +
-                            loc.getLatitude() + " Lng: " + loc.getLongitude(),
-                    Toast.LENGTH_SHORT).show();
+           // Toast.makeText(getBaseContext(), "Location changed : Lat: " +
+             //               loc.getLatitude() + " Lng: " + loc.getLongitude(),
+               //     Toast.LENGTH_SHORT).show();
 
             String longitude = "Longitude: " + loc.getLongitude();
 
