@@ -422,7 +422,7 @@ catch( Exception ex)
       // setContentView(R.layout.layout);
         usbManager = (UsbManager) getSystemService(this.USB_SERVICE);
         buttonStatus = (Button) findViewById(R.id.buttonStatus);
-        sendButton = (Button) findViewById(R.id.buttonSend);
+        sendButton = (Button) findViewById(R.id.buttonTest);
         clearButton = (Button) findViewById(R.id.buttonClear);
         editTextSerialCommandToSend = (EditText) findViewById(R.id.editTextSerialCommandToSend);
         editPhoneNumber = (EditText) findViewById(R.id.editPhoneNumber);
