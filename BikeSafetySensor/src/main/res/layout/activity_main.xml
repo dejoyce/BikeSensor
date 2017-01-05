@@ -8,34 +8,168 @@
 
     <GridLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="#FFD700">
 
         <Button
             android:text="Status: "
-            android:layout_width="153dp"
-            android:layout_height="32dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:id="@+id/buttonStatus"
             android:layout_alignParentStart="true"
-            android:textSize="12sp"
+            android:textSize="16sp"
             android:focusableInTouchMode="true"
-            android:background="@android:color/background_dark"
-            android:textColor="@android:color/holo_orange_light"
+            android:background="@android:color/holo_red_light"
+            android:textColor="@android:color/black"
             android:verticalScrollbarPosition="right"
             android:textStyle="bold"
             android:layout_columnSpan="2"
             android:layout_gravity="fill_horizontal" />
 
-        <TextView
-            android:text="Emergency Contact"
-            android:layout_width="158dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/textView2"
-            android:layout_below="@+id/buttonStatus"
-            android:layout_row="1"
-            android:layout_column="0" />
+        <ViewFlipper
+            android:layout_width="match_parent"
+            android:layout_height="371dp"
+            android:layout_below="@+id/gridLayout"
+            android:layout_row="2"
+            android:layout_column="0"
+            android:layout_columnSpan="2"
+            android:id="@+id/viewFlipper">
+
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/holo_red_light">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/imageView"
+                    android:src="@drawable/splashscreen"
+                    android:paddingTop="40dp"
+                    android:paddingBottom="40dp"
+                    android:paddingRight="40dp"
+                    android:paddingLeft="40dp"
+                    android:background="@android:color/background_dark" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/layoutMiddle"
+
+
+                android:layout_gravity="fill_horizontal"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:background="@android:color/background_dark">
+
+                <TextView
+                    android:id="@+id/textView"
+                    android:scrollbars = "vertical"
+                    android:text="debuging"
+                    android:textSize="10sp"
+                    android:background="@android:color/background_dark"
+                    android:textColor="@android:color/holo_green_light"
+                    android:layout_width="match_parent"
+                    android:layout_height="357dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_toRightOf="@+id/layoutMiddle"
+                    android:layout_toEndOf="@+id/layoutMiddle"
+                    android:layout_weight="1" />
+
+                <RadioGroup
+                    android:layout_width="190dp"
+                    android:layout_height="227dp"
+                    android:background="@android:color/holo_orange_dark"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true">
+
+                    <RadioButton
+                        android:text="Sound Buzzer for 2 seconds"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/radioButtonSoundBuzzer"
+                        android:textSize="10sp"
+                        android:layout_below="@+id/buttonClear"
+                        android:layout_toRightOf="@+id/textView"
+                        android:layout_toEndOf="@+id/textView" />
+
+                    <RadioButton
+                        android:text="Light LED for 2 seconds"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/radioButtonLightLED"
+                        android:textSize="10sp"
+                        android:layout_below="@+id/radioButtonSoundBuzzer"
+                        android:layout_toEndOf="@+id/textView"
+                        android:layout_toRightOf="@+id/textView" />
+
+                    <RadioButton
+                        android:text="Display on LCD"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/radioButtonDisplayLCD"
+                        android:textSize="10sp"
+                        android:layout_below="@+id/radioButtonLightLED"
+                        android:layout_toRightOf="@+id/textView"
+                        android:layout_toEndOf="@+id/textView" />
+
+                    <RadioButton
+                        android:text="Send Serial Data"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/radioButtonSendSerialCommand"
+                        android:textSize="10sp"
+                        android:layout_centerVertical="true"
+                        android:layout_toRightOf="@+id/textView"
+                        android:layout_toEndOf="@+id/textView" />
+
+                    <EditText
+                        android:layout_height="wrap_content"
+                        android:id="@+id/editTextSerialCommandToSend"
+                        android:textSize="8sp"
+                        android:hint="Serial Command"
+                        android:layout_below="@+id/textView"
+                        android:layout_toLeftOf="@+id/radioGroup"
+                        android:layout_toStartOf="@+id/radioGroup"
+                        android:layout_width="wrap_content"
+                        android:background="@color/common_google_signin_btn_text_light_disabled"
+                        android:paddingRight="10dp"
+                        android:paddingLeft="10dp"
+                        android:layout_marginLeft="50dp" />
+
+                    <RadioButton
+                        android:text="Send Text with GPS"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/radioButtonSendTestSMS"
+                        android:textSize="10sp"
+                        android:layout_below="@+id/editTextSerialCommandToSend"
+                        android:layout_toRightOf="@+id/textView"
+                        android:layout_toEndOf="@+id/textView" />
+
+                    <Button
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Test"
+                        android:id="@+id/buttonTest"
+                        android:onClick="sendDataViaSerialPort"
+                        android:textSize="14sp"
+                        android:layout_alignParentBottom="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentEnd="true"
+                        android:layout_marginLeft="50dp" />
+                </RadioGroup>
+
+            </LinearLayout>
+
+        </ViewFlipper>
 
         <EditText
-            android:layout_width="224dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/editPhoneNumber"
             android:text="0876238219"
@@ -43,128 +177,14 @@
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:layout_row="1"
-            android:layout_column="1" />
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/layoutMiddle"
-            android:layout_below="@+id/gridLayout"
-            android:layout_row="2"
-            android:layout_column="0"
-            android:layout_columnSpan="2"
-            android:layout_gravity="fill_horizontal"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:background="@android:color/holo_green_light">
-
-            <TextView
-                android:id="@+id/textView"
-                android:scrollbars = "vertical"
-                android:text="debuging"
-                android:textSize="10sp"
-                android:background="@android:color/background_dark"
-                android:textColor="@android:color/holo_green_light"
-                android:layout_width="match_parent"
-                android:layout_height="357dp"
-                android:layout_alignParentBottom="true"
-                android:layout_toRightOf="@+id/layoutMiddle"
-                android:layout_toEndOf="@+id/layoutMiddle"
-                android:layout_weight="1" />
-
-            <RadioGroup
-                android:layout_width="190dp"
-                android:layout_height="227dp"
-                android:background="@android:color/holo_orange_dark"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true">
-
-                <RadioButton
-                    android:text="Sound Buzzer for 2 seconds"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/radioButtonSoundBuzzer"
-                    android:textSize="10sp"
-                    android:layout_below="@+id/buttonClear"
-                    android:layout_toRightOf="@+id/textView"
-                    android:layout_toEndOf="@+id/textView" />
-
-                <RadioButton
-                    android:text="Light LED for 2 seconds"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/radioButtonLightLED"
-                    android:textSize="10sp"
-                    android:layout_below="@+id/radioButtonSoundBuzzer"
-                    android:layout_toEndOf="@+id/textView"
-                    android:layout_toRightOf="@+id/textView" />
-
-                <RadioButton
-                    android:text="Display on LCD"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/radioButtonDisplayLCD"
-                    android:textSize="10sp"
-                    android:layout_below="@+id/radioButtonLightLED"
-                    android:layout_toRightOf="@+id/textView"
-                    android:layout_toEndOf="@+id/textView" />
-
-                <RadioButton
-                    android:text="Send Serial Data"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/radioButtonSendSerialCommand"
-                    android:textSize="10sp"
-                    android:layout_centerVertical="true"
-                    android:layout_toRightOf="@+id/textView"
-                    android:layout_toEndOf="@+id/textView" />
-
-                <EditText
-                    android:layout_height="wrap_content"
-                    android:id="@+id/editTextSerialCommandToSend"
-                    android:textSize="8sp"
-                    android:hint="Serial Command"
-                    android:layout_below="@+id/textView"
-                    android:layout_toLeftOf="@+id/radioGroup"
-                    android:layout_toStartOf="@+id/radioGroup"
-                    android:layout_width="wrap_content"
-                    android:background="@color/common_google_signin_btn_text_light_disabled"
-                    android:paddingRight="10dp"
-                    android:paddingLeft="10dp"
-                    android:layout_marginLeft="50dp" />
-
-                <RadioButton
-                    android:text="Send Text with GPS"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/radioButtonSendTestSMS"
-                    android:textSize="10sp"
-                    android:layout_below="@+id/editTextSerialCommandToSend"
-                    android:layout_toRightOf="@+id/textView"
-                    android:layout_toEndOf="@+id/textView" />
-
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Test"
-                    android:id="@+id/buttonTest"
-                    android:onClick="sendDataViaSerialPort"
-                    android:textSize="14sp"
-                    android:layout_alignParentBottom="true"
-                    android:layout_alignParentRight="true"
-                    android:layout_alignParentEnd="true"
-                    android:layout_marginLeft="50dp" />
-            </RadioGroup>
-
-        </LinearLayout>
+            android:layout_column="1"
+            android:layout_gravity="left" />
 
         <TextView
             android:text="55 Vehicles passed within 1.5 meters"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/textView2"
-            android:layout_below="@+id/buttonStatus"
+            android:id="@+id/textViewNumVehiclesUnder15"
             android:layout_row="3"
             android:layout_column="0" />
 
@@ -172,21 +192,35 @@
             android:text="12 times the bicycle has fallen"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/textView2"
-            android:layout_below="@+id/buttonStatus"
             android:layout_row="4"
             android:layout_column="0" />
 
-        <ImageButton
+        <TextView
+            android:text="Emergency Contact"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:id="@+id/textView2"
+            android:layout_below="@+id/buttonStatus"
+            android:layout_row="1"
+            android:layout_column="0"
+            android:layout_gravity="right"
+            android:layout_marginRight="10dp"
+            android:textSize="16sp" />
 
-            android:id="@+id/imageButton2"
+        <ImageButton
+            android:layout_width="40sp"
+            android:layout_height="40sp"
+
+            android:id="@+id/imageButtonFlipper"
             android:layout_row="3"
             android:layout_column="1"
             android:layout_rowSpan="2"
-            android:layout_marginLeft="30dp"
-            android:background="?attr/colorPrimary" />
+            android:src="@drawable/cog4040"
+            android:onClick="onViewFlip"
+            android:layout_marginLeft="20dp"
+            android:layout_gravity="right"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="5dp" />
 
 
     </GridLayout>

@@ -26,9 +26,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ViewFlipper;
 
 import com.felhr.usbserial.UsbSerialDevice;
 import com.felhr.usbserial.UsbSerialInterface;
@@ -61,6 +63,8 @@ public class MainActivity extends Activity {
     RadioButton radioButtonDisplayLCD;
     RadioButton radioButtonSendSerialCommand;
     RadioButton radioButtonSendSMSTest;
+    ViewFlipper vf;
+    ImageButton buttonFlipper;
 
     private LocationManager locationMangaer = null;
     private LocationListener locationListener = null;
@@ -101,6 +105,8 @@ public class MainActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             try {
+                buttonStatus.setBackgroundColor(0xFF0000);
+
             if (intent.getAction().equals(ACTION_USB_PERMISSION)) {
                 boolean granted = intent.getExtras().getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED);
                 if (granted) {
@@ -123,6 +129,7 @@ public class MainActivity extends Activity {
                             Toast.makeText(getApplicationContext(), "Connected to Arduino",
                                     Toast.LENGTH_LONG).show();
 
+                            buttonStatus.setBackgroundColor(0x228B22);
                         } else {
                             Log.d("SERIAL", "PORT NOT OPEN");
                             connected = false;
@@ -165,9 +172,11 @@ try {
     Log.d("SERIAL", "initializeUSBDevices");
 
     if (connected == true) {
-        textviewAppendData(textView, "initializeUSBDevices - Already Connected");
+        textviewAppendData(textView, "Arduino already Connected");
         return;
     }
+
+    buttonStatus.setBackgroundColor(0xFF0000);
 
     HashMap<String, UsbDevice> usbDevices = usbManager.getDeviceList();
     if (!usbDevices.isEmpty()) {
@@ -181,8 +190,8 @@ try {
                 PendingIntent pi = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
                 usbManager.requestPermission(device, pi);
                 keep = false;
-                textviewAppendData(textView, "Found Arduino Vendor ID");
-                updateStatus("Found Arduino USB Board");
+                textviewAppendData(textView, "Found Arduino Board");
+                updateStatus("Found Arduino Board");
             } else {
                 connection = null;
                 device = null;
@@ -193,7 +202,7 @@ try {
 
         }
     } else {
-        textviewAppendData(textView, "initializeUSBDevices - No USB Devices");
+        textviewAppendData(textView, "No USB Devices");
         updateStatus("No USB Devices");
     }
 }
@@ -314,8 +323,8 @@ catch( Exception ex)
         }
     }
 
-    public void onClickClear(View view) {
-        textView.setText(" ");
+    public void onViewFlip(View view) {
+            vf.showNext();
     }
 
     private void textviewAppendData(TextView tv, CharSequence text) {
@@ -431,7 +440,8 @@ catch( Exception ex)
         radioButtonDisplayLCD = (RadioButton) findViewById(R.id.radioButtonDisplayLCD);
         radioButtonSendSerialCommand = (RadioButton) findViewById(R.id.radioButtonSendSerialCommand);
         radioButtonSendSMSTest = (RadioButton) findViewById(R.id.radioButtonSendTestSMS);
-
+        vf = (ViewFlipper) findViewById( R.id.viewFlipper );
+        buttonFlipper = (ImageButton) findViewById( R.id.imageButtonFlipper );
 
         buttonStatus.requestFocus();
 
