@@ -42,7 +42,8 @@
                 android:src="@android:drawable/stat_sys_phone_call_forward"
                 android:id="@+id/imageView3"
                 android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp" />
+                android:layout_marginRight="5dp"
+                android:paddingTop="3dp" />
 
             <TextView
                 android:text="Emergency Contact:"

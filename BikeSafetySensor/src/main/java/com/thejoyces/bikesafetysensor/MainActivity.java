@@ -151,31 +151,26 @@ public class MainActivity extends Activity {
                             connected = true;
 
                             updateStatus("Connected to Arduino");
-                           // Toast.makeText(getApplicationContext(), "Connected to Arduino",
-                             //       Toast.LENGTH_LONG).show();
 
                             buttonStatus.setBackgroundColor(Color.GREEN);
                         } else {
-                            //Log.d("SERIAL", "PORT NOT OPEN");
                             connected = false;
                             textviewAppendData(textView, "Port not Opened!");
                             updateStatus("Port not Opened!");
                         }
                     } else {
-                        //Log.d("SERIAL", "PORT IS NULL");
                         connected = false;
                         textviewAppendData(textView, "Port is NULL");
                         updateStatus("Port is NULL");
                     }
                 } else {
-                    //Log.d("SERIAL", "PERM NOT GRANTED");
                     connected = false;
                     textviewAppendData(textView, "Perm not granted!");
                     updateStatus("Perm not granted!");
                 }
             } else if (intent.getAction().equals(UsbManager.ACTION_USB_DEVICE_ATTACHED)) {
                 textviewAppendData(textView, "USB Cable plugged in");
-                //initializeUSBDevices(startButton);
+                initializeUSBDevices(startButton);
 
              /*   final Handler handler = new Handler();
                 Runnable runnable = new Runnable(){
@@ -205,9 +200,10 @@ public class MainActivity extends Activity {
         ;
     };
 
+
+
     public void initializeUSBDevices(View view) {
 try {
-    // textviewAppendData(textView, "initializeUSBDevices");
     Log.d("SERIAL", "initializeUSBDevices");
 
     if (connected == true) {
@@ -263,55 +259,76 @@ catch( Exception ex)
      */
     private GoogleApiClient client;
 
+
+
+
+
+
     public void getGPSLocationAndSendText(View view) {
-        flag = displayGpsStatus();
-        if (flag) {
-            textviewAppendData(textView, "Requesting GPS Location");
 
-            locationListener = new MyLocationListener();
+        textviewAppendData(textView, "Requesting GPS Location");
 
-            try {
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
-                    //alertbox("Gps Status!!", "No permission to get GPS");
-                    textviewAppendData(textView, "No permission to get GPS");
-                    return;
-                }
-
-                locationMangaer.requestLocationUpdates(LocationManager
-                        .GPS_PROVIDER, 5000, 10, locationListener);
-            } catch (Exception ex) {
-               // alertbox("Gps Status!!", "Your GPS is: OFF" + ex.getMessage());
-                textviewAppendData(textView, "Your GPS is turned OFF");
-            }
-
-        } else {
-            //Toast.makeText(getApplicationContext(), "Your GPS is OFF",
-              //      Toast.LENGTH_LONG).show();
-            textviewAppendData(textView, "Your GPS is OFF");
-
-            //alertbox("Gps Status!!", "Your GPS is: OFF");
-
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            //alertbox("Gps Status!!", "No permission to get GPS");
+            textviewAppendData(textView, "No permission to get GPS");
+            return;
         }
 
-     /*   try {
+        Location locationGPS = locationMangaer.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        Location locationNet = locationMangaer.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+
+        long GPSLocationTime = 0;
+        if (null != locationGPS) { GPSLocationTime = locationGPS.getTime(); }
+
+        long NetLocationTime = 0;
+
+        if (null != locationNet) {
+            NetLocationTime = locationNet.getTime();
+        }
+
+        String logString;
+
+        Location locationToUse = locationNet;
+        if ( 0 < GPSLocationTime - NetLocationTime ) {
+            locationToUse = locationGPS;
+            logString = "GPS Loc ";
+        }
+        else
+        {
+            logString = "Network Loc ";
+            //textviewAppendData(textView, "Using Network Location");
+        }
+
+        if( locationToUse == null )
+        {
+            textviewAppendData(textView, "Cannot get location");
+            return;
+        }
+
+        textviewAppendData(textView, logString + locationToUse.getLatitude() + ", " + locationToUse.getLongitude());
+
+        try {
             SmsManager smsManager = SmsManager.getDefault();
-            smsManager.sendTextMessage(editPhoneNumber.getText().toString(), null, "sms message", null, null);
-            Toast.makeText(getApplicationContext(), "SMS Sent!",
-                    Toast.LENGTH_LONG).show();
-            textviewAppendData(textView, "SMS Sent!");
+
+           // String msg = "Warning Alert from Bob while out cycling, his location is.\ncomgooglemaps://?center=" + locationToUse.getLatitude() + "," + locationToUse.getLongitude() + "&zoom=14&views=traffic&mapmode=standard&views=traffic";
+            String msg = "Warning Alert from Bob while out cycling, his location is.\nhttp://maps.google.com/?q=" + locationToUse.getLatitude() + "," + locationToUse.getLongitude();
+
+            smsManager.sendTextMessage(editPhoneNumber.getText().toString(), null, msg, null, null);
+              Toast.makeText(getApplicationContext(), "SMS Sent to " + editPhoneNumber.getText().toString(),
+                    Toast.LENGTH_SHORT).show();
+            textviewAppendData(textView, "SMS Sent to " + editPhoneNumber.getText().toString());
         } catch (Exception ex) {
             ex.printStackTrace();
 
             textviewAppendData(textView, ex.getMessage());
-            alertbox("cannot send sms", ex.getMessage());
-        }*/
+        }
     }
 
     public void sendDataViaSerialPort(View view) {
@@ -445,33 +462,6 @@ catch( Exception ex)
         }
     }
 
-   /* protected void alertbox(String title, String mymessage) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage("Your Device's GPS is Disable")
-                .setCancelable(false)
-                .setTitle("** Gps Status **")
-                .setPositiveButton("Gps On",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                // finish the current activity
-                                // AlertBoxAdvance.this.finish();
-                                Intent myIntent = new Intent(
-                                        Settings.ACTION_SECURITY_SETTINGS);
-                                startActivity(myIntent);
-                                dialog.cancel();
-                            }
-                        })
-                .setNegativeButton("Cancel",
-                        new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                // cancel the dialog box
-                                dialog.cancel();
-                            }
-                        });
-        AlertDialog alert = builder.create();
-        alert.show();
-    }*/
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -495,16 +485,10 @@ catch( Exception ex)
 
         buttonStatus.requestFocus();
 
-
         textView = (TextView) findViewById(R.id.textView);
         textView.setText("");
-        // textView.setMovementMethod(new ScrollingMovementMethod());
 
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
-
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_USB_PERMISSION);
@@ -515,27 +499,9 @@ catch( Exception ex)
         locationMangaer = (LocationManager)
                 getSystemService(Context.LOCATION_SERVICE);
 
-
-
         editPhoneNumber.setText("0876238219");
 
         initializeUSBDevices( null );
-
-        /*
-
-        //private final int interval = 10000; // 1 Second
-         final Handler handler = new Handler();
-         Runnable runnable = new Runnable(){
-            public void run() {
-                initializeUSBDevices( null );
-
-                handler.postDelayed(this, 10000);
-            }
-        };
-
-        handler.postAtTime(runnable, System.currentTimeMillis()+2000);
-        handler.postDelayed(runnable, 2000);
-*/
     }
 
     public void updateStatus(String message)
@@ -546,53 +512,6 @@ catch( Exception ex)
 
        // this.buttonStatus.setText("Status: " + message + "(" + formattedDate + ")");
         this.buttonStatus.setText("Status: " + message );
-    }
-
-    /*----------Listener class to get coordinates ------------- */
-    private class MyLocationListener implements LocationListener {
-        @Override
-        public void onLocationChanged(Location loc) {
-
-           // Toast.makeText(getBaseContext(), "Location changed : Lat: " +
-             //               loc.getLatitude() + " Lng: " + loc.getLongitude(),
-               //     Toast.LENGTH_SHORT).show();
-
-            String longitude = "Longitude: " + loc.getLongitude();
-
-            textviewAppendData(textView, "longitude " + longitude);
-
-            String latitude = "Latitude: " + loc.getLatitude();
-            textviewAppendData(textView, "Latitude " + latitude);
-
-            try {
-                SmsManager smsManager = SmsManager.getDefault();
-                smsManager.sendTextMessage(editPhoneNumber.getText().toString(), null, longitude + latitude, null, null);
-              //  Toast.makeText(getApplicationContext(), "SMS Sent to" + editPhoneNumber.getText().toString(),
-                //        Toast.LENGTH_LONG).show();
-                textviewAppendData(textView, "SMS Sent to " + editPhoneNumber.getText().toString());
-            } catch (Exception ex) {
-                ex.printStackTrace();
-
-                textviewAppendData(textView, ex.getMessage());
-                //alertbox("cannot send sms", ex.getMessage());
-            }
-        }
-
-        @Override
-        public void onProviderDisabled(String provider) {
-            // TODO Auto-generated method stub
-        }
-
-        @Override
-        public void onProviderEnabled(String provider) {
-            // TODO Auto-generated method stub
-        }
-
-        @Override
-        public void onStatusChanged(String provider,
-                                    int status, Bundle extras) {
-            // TODO Auto-generated method stub
-        }
     }
 }
 
