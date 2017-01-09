@@ -76,6 +76,8 @@ public class MainActivity extends Activity {
     private LocationListener locationListener = null;
     private Boolean flag = false;
 
+    long doNotUpdateUntilAfter = 0;
+
     private Boolean connected = false;
 
     UsbSerialInterface.UsbReadCallback mCallback = new UsbSerialInterface.UsbReadCallback() { //Defining a Callback which triggers whenever data is read.
@@ -88,7 +90,7 @@ public class MainActivity extends Activity {
                 data.concat("/n");
                 textviewAppendData(textView, "Received Data: " + data);
 
-                if( data.startsWith("2"))
+                if( data.startsWith("t"))
                 {
                     numTimeBikeFallen++;
                     runOnUiThread(new Runnable() {
@@ -100,16 +102,22 @@ public class MainActivity extends Activity {
                         }
                     });
                 }
-                else if( data.startsWith("3"))
+                else if( data.startsWith("d"))
                 {
-                    numVehiclesWithin15++;
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            textviewAppendData(textView, "Vehicle passed within 1.5m");
-                            textViewNumVehiclesUnder15.setText(numVehiclesWithin15 + " Vehicles passed within 1.5meters");
-                        }
-                    });
+                    long currentTime = System.currentTimeMillis();
+
+                    if( currentTime > doNotUpdateUntilAfter ) {
+                        numVehiclesWithin15++;
+                        doNotUpdateUntilAfter = currentTime + 5000;
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                textviewAppendData(textView, "Vehicle passed within 1.5m");
+                                textViewNumVehiclesUnder15.setText(numVehiclesWithin15 + " Vehicles passed within 1.5meters");
+                            }
+                        });
+                    }
                 }
             } catch (UnsupportedEncodingException e) {
                 textviewAppendData(textView, "onReceivedData: " + e.getMessage() );
@@ -221,7 +229,7 @@ try {
         for (Map.Entry<String, UsbDevice> entry : usbDevices.entrySet()) {
             device = entry.getValue();
           int deviceVID = device.getVendorId();
-            textviewAppendData(textView, "initializeUSBDevices - deviceId" + device.getDeviceName() + "   " + device.getManufacturerName() + "   " + device.getDeviceId());
+            textviewAppendData(textView, "initializeUSBDevices - deviceId" + device.getDeviceName() + device.getDeviceId());
             if (deviceVID == 0x2341)//Arduino Vendor ID
             {
                 PendingIntent pi = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
@@ -318,7 +326,7 @@ catch( Exception ex)
             SmsManager smsManager = SmsManager.getDefault();
 
            // String msg = "Warning Alert from Bob while out cycling, his location is.\ncomgooglemaps://?center=" + locationToUse.getLatitude() + "," + locationToUse.getLongitude() + "&zoom=14&views=traffic&mapmode=standard&views=traffic";
-            String msg = "Warning Alert from Bob while out cycling, his location is.\nhttp://maps.google.com/?q=" + locationToUse.getLatitude() + "," + locationToUse.getLongitude();
+            String msg = "Warning Alert from Bob while out cycling, his location is.\n\nhttp://maps.google.com/?q=" + locationToUse.getLatitude() + "," + locationToUse.getLongitude();
 
             smsManager.sendTextMessage(editPhoneNumber.getText().toString(), null, msg, null, null);
               Toast.makeText(getApplicationContext(), "SMS Sent to " + editPhoneNumber.getText().toString(),
@@ -499,7 +507,7 @@ catch( Exception ex)
         locationMangaer = (LocationManager)
                 getSystemService(Context.LOCATION_SERVICE);
 
-        editPhoneNumber.setText("0876238219");
+        editPhoneNumber.setText("0838218589");
 
         initializeUSBDevices( null );
     }
